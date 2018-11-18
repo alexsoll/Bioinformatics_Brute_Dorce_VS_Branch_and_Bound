@@ -17,13 +17,13 @@ def CycloSpectrum(peptide):
     total_sum = 0
     string = ''
     dict = Amino_Acid_Mass()
-
     l.append(0)
-    for i in range(len(peptide)):
-        total_sum += dict.get(peptide[i:i+1])
-        l.append(dict.get(peptide[i:i+1]))
+    for amino_acid in peptide:
+        elem = dict.get(amino_acid)
+        total_sum += elem
+        l.append(elem)
     l.append(total_sum)
-    for i in range(len(peptide)):
+    for i, val in enumerate(peptide):
         for j in range(1, len(peptide) - 1):
             sum = 0
             if (i+j > (len(peptide) - 1)):
@@ -135,12 +135,12 @@ def Cyclopeptide_Scoring(peptide, spectrum):
 
 
 
-Cyclopeptide_Scoring('NQEL','0 99 113 114 128 227 257 299 355 356 370 371 484')
+#Cyclopeptide_Scoring('NQEL','0 99 113 114 128 227 257 299 355 356 370 371 484')
 
 
-#strin = CycloSpectrum('LIQKWTV')
-#res = CyclopeptideSequencing(strin)
-#print(peptide_to_mass(res))
+strin = CycloSpectrum('LIWTV')
+res = CyclopeptideSequencing(strin)
+print(peptide_to_mass(res))
 
 
 
