@@ -1,6 +1,8 @@
+import time
+
 def ParentMass(spectrum):
-    spec = spectrum.split(" ")
-    return int(spec.pop())
+    #spec = spectrum.split(" ")
+    return int(max(spectrum))
 
 
 def Amino_Acid_Mass():
@@ -17,65 +19,77 @@ def CycloSpectrum(peptide):
     total_sum = 0
     string = ''
     dict = Amino_Acid_Mass()
+    #l.append(str(0))
     l.append(0)
     for amino_acid in peptide:
         elem = dict.get(amino_acid)
         total_sum += elem
+        #l.append(str(elem))
         l.append(elem)
+    #l.append(str(total_sum))
     l.append(total_sum)
+    ln = len(peptide)
     for i, val in enumerate(peptide):
-        for j in range(1, len(peptide) - 1):
+        for j in range(1, ln - 1):
             sum = 0
-            if (i+j > (len(peptide) - 1)):
-                tmp = peptide[i:len(peptide)] + peptide[:j - (len(peptide) - i) + 1]
+            if (i+j > (ln - 1)):
+                tmp = peptide[i:ln] + peptide[:j - (ln - i) + 1]
             else:
                 tmp = peptide[i:i+j+1]
-            for k in range(len(tmp)):
-                sum += dict.get(tmp[k:k+1])
+            for char in tmp:
+                sum += dict.get(char)
+            #l.append(str(sum))
             l.append(sum)
     
     l.sort()
-    string += str(l[0])
-    for i in range(1,len(l)):
-        string += ' ' + str(l[i])
-    return string
+    return l
+    #string += str(l[0])
+    #for i in range(1,len(l)):
+    #    string += ' ' + str(l[i])
+    #return string
 
-def peptideMass(str):
+def peptideMass(pept):
     dict = Amino_Acid_Mass()
     sum = 0
-    for k in range(len(str)):
-        sum += dict.get(str[k:k+1])
+    for item in pept:
+        sum += dict.get(item)
     return sum
 
-def Expand(peptides):
+def Expand(peptides,spectrum):
     dict = Amino_Acid_Mass()
     newlist = list()
     for item in peptides:
         for key in dict:
+            if not consistent(list(key), spectrum):
+                continue
             newSubList = list(item)
             newSubList.append(key)
             newlist.append(newSubList)
+            #newlist.append(item+key)
     return newlist
 
 
 def consistent(peptide, spectrum):
     dict = Amino_Acid_Mass()
-    #pept = peptide.split(" ")
-    pept = []
-    for i in range(len(peptide)):
-        pept.append(peptide[i:i+1])
-    for j in range(len(pept)):
-        pept[j] = str(dict.get(pept[j]))
-    spec = spectrum.split(" ")
-    coincidence = 0
-    for i in pept:
-        if i in spec:
-            coincidence += 1
-            spec.remove(i)
-    if coincidence == len(pept):
-        return True
-    else:
-        return False
+    #pept = []
+    #for i in range(len(peptide)):
+    #    pept.append(peptide[i:i+1])
+    #for j in range(len(pept)):
+    #    pept[j] = str(dict.get(pept[j]))
+    #spec = spectrum.split(" ")
+    #coincidence = 0
+    pept = list(peptide)
+    spec = list(spectrum)
+    for i,val in enumerate(pept):
+        #pept[i] = str(dict.get(val))
+        pept[i] = dict.get(val)
+
+    for item in pept:
+        if item in spec:
+            spec.remove(item)
+        else:
+            return False
+    return True
 
 
 def peptide_to_mass(peptide):
@@ -95,29 +109,37 @@ def peptide_to_mass(peptide):
 
 
 def CyclopeptideSequencing(spectrum):
-   peptide = ''
+   #peptide = ''
    peptides = ['']
    parentmass = ParentMass(spectrum)
    result = []
    while len(peptides) != 0:
-           peptides = Expand(peptides)
+           peptides = Expand(peptides,spectrum)
+           #ln = (len(peptides))
+           #tmp = 0
+           #to_delete = []
+           #for peptide in peptides:
            ln = (len(peptides))
            tmp = 0
            for i in range(ln):
            #for item in peptides:
                i -= tmp
-               for j in peptides[i]:
-                   peptide += j
-               if peptideMass(peptide) == parentmass:
-                   if CycloSpectrum(peptide) == spectrum:
+               #for j in peptides[i]:
+               #   peptide += j
+               if peptideMass(peptides[i]) == parentmass:
+                   if CycloSpectrum(peptides[i]) == spectrum:
                         #print(peptide)
-                        result.append(peptide)
+                        result.append(peptides[i])
                         peptides.remove(peptides[i])
                         tmp += 1
-               if not consistent(peptide, spectrum):
+                        #to_delete.append(peptide[i])
+               elif not consistent(peptides[i], spectrum):
+                   #to_delete.append(peptides[i])
                    peptides.remove(peptides[i])
                    tmp += 1
-               peptide = ''
+               #peptide = ''
+           #for item in to_delete:
+            #   peptides.remove(item)
    return result
 
 def Cyclopeptide_Scoring(peptide, spectrum):
@@ -132,15 +154,16 @@ def Cyclopeptide_Scoring(peptide, spectrum):
     print(score)
 
 
-
-
+start_time = time.time()
 
 #Cyclopeptide_Scoring('NQEL','0 99 113 114 128 227 257 299 355 356 370 371 484')
 
-
-strin = CycloSpectrum('LIWTV')
-res = CyclopeptideSequencing(strin)
+#spectrum = '0 113 128 186 241 299 314 427'.split(" ")
+#spectrum = list(map(int,spectrum))
+spectrum = CycloSpectrum('LIWTVEG')
+spectrum.sort()
+res = CyclopeptideSequencing(spectrum)
 print(peptide_to_mass(res))
 
-
+print("--- %s seconds ---" % (time.time() - start_time))
 
